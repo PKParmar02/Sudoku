@@ -11,16 +11,17 @@
     $(document).ready(function() {
         $('#loginForm').submit(function(e) {
             e.preventDefault(); // Prevent the form from submitting normally
-            $.ajax({
+            $.ajax({    
                 type: "POST",
                 url: "login_process.php",
                 data: $(this).serialize(),
                 success: function(response) {
                     var jsonData = JSON.parse(response);
-                    if (jsonData.success == "1") {
+                    if (jsonData.success) {
                         window.location.href = 'dashboard.php'; // Redirect to the dashboard
                     } else {
-                        alert('Invalid Credentials!');
+                        // Display message with possible HTML content
+                        alert($(jsonData.message).text() || 'Invalid Credentials!');
                     }
                 }
             });

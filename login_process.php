@@ -1,19 +1,37 @@
 <?php
-session_start();
-require_once 'path/to/db.php'; // Adjust the path as necessary
+require_once('function.php');
 
-$username = $_POST['username'];
+// Function to check user credentials and login
+function loginUser($login, $password) {
+    // Define the columns to fetch from the database
+    $columns = ['id', 'username', 'password', 'email', 'mobilenumber'];
+    // Define the conditions to check for email, username, or mobile number
+    $whereConditions = [
+        "(username = :login OR email = :login OR mobilenumber = :login)"
+    ];
+    // Fetch user data from the database
+    $userData = selectFromTable('users', $columns, $whereConditions, ['login' => $login]);
+
+    // Check if user exists
+    if ($userData) {
+        // Check if password is correct
+        if (password_verify($password, $userData[0]['password'])) {
+            // Login successful
+            return ajaxResponse(true, [], "Login successful.");
+        } else {
+            // Incorrect password
+            return ajaxResponse(false, [], "Invalid credentials.");
+        }
+    } else {
+        // No user found
+        return ajaxResponse(false, [], "No account registered with these details. <a href='signup.php'>Sign up here</a>.");
+    }
+}
+
+// Get data from AJAX request
+$login = $_POST['login'];
 $password = $_POST['password'];
 
-// Example SQL query, adjust as necessary
-$query = $db->prepare("SELECT * FROM users WHERE username = :username AND password = :password");
-$query->execute(['username' => $username, 'password' => $password]);
-$user = $query->fetch();
-
-if ($user) {
-    $_SESSION['user_id'] = $user['id']; // Set user session or any other session required
-    echo json_encode(array('success' => 1));
-} else {
-    echo json_encode(array('success' => 0));
-}
+// Attempt to login
+echo loginUser($login, $password);
 ?>
